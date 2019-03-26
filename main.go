@@ -1,7 +1,7 @@
 package main
 
 import (
-	"enigma/cmd"
+	"github.com/weiwolves/enigma/cmd"
 )
 
 func main() {
