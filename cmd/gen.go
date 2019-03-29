@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"strings"
-	"log"
-	"fmt"
-	"database/sql"
-	"os"
 	"bufio"
+	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"strings"
 )
 
 var genCmd = &cobra.Command{
@@ -66,7 +66,21 @@ func GenerateProto(args []string) {
 		return
 	}
 
-	if _, err := w.Write([]byte(fmt.Sprintf("message %s {\n", GetCamelCase(dbTable)))); err != nil {
+	// write golang package name
+	if len(goPkg) > 0 {
+		if _, err := w.Write([]byte(fmt.Sprintf("option go_package = \"%s\";\n\n", goPkg))); err != nil {
+			log.Println("Error when write data to file, detail: ", err)
+			return
+		}
+	}
+
+	var dt string
+	if caseFlag == "0" {
+		dt = dbTable
+	} else {
+		dt = GetCamelCase(dbTable)
+	}
+	if _, err := w.Write([]byte(fmt.Sprintf("message %s {\n", dt))); err != nil {
 		log.Println("Error when write data to file, detail: ", err)
 		return
 	}
@@ -79,7 +93,7 @@ func GenerateProto(args []string) {
 			log.Println("Error when scan rows, detail: ", err)
 			return
 		}
-		//log.Println("ColumnName: ", columnName, ", DataType: ", dataType)
+		// log.Println("ColumnName: ", columnName, ", DataType: ", dataType)
 		counter++
 		buf := []byte(fmt.Sprintf("\t%s %s = %d;\n", GetProtoDataType(dataType), columnName, counter))
 
@@ -103,13 +117,17 @@ func GenerateProto(args []string) {
 
 func GetProtoDataType(mysqlType string) string {
 	switch mysqlType {
-	case "varchar", "longtext", "text":
+	case "char", "varchar", "longtext", "text", "mediumtext":
 		return "string"
-	case "smallint", "int", "bigint", "date", "datetime", "timestamp":
+	case "tinyblob", "blob", "mediumblob", "longblob":
+		return "string"
+	case "smallint":
+		return "int32"
+	case "int", "bigint", "date", "datetime", "timestamp":
 		return "int64"
 	case "tinyint":
 		return "bool"
-	case "decimal":
+	case "decimal", "float", "double", "real":
 		return "double"
 	default:
 		return ""

@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"fmt"
 	"strings"
 )
 
@@ -15,6 +15,8 @@ var dbPass string
 var dbName string
 var dbTable string
 var protoFile string
+var caseFlag string
+var goPkg string
 
 func init() {
 	genCmd.Flags().StringVarP(&dbType, "type", "g", "mysql", "db type: mysql, postgres")
@@ -25,6 +27,8 @@ func init() {
 	genCmd.Flags().StringVarP(&dbName, "db", "d", "db_name", "db name")
 	genCmd.Flags().StringVarP(&dbTable, "table", "t", "table_name", "db name")
 	genCmd.Flags().StringVarP(&protoFile, "file", "f", "proto", "proto file name")
+	genCmd.Flags().StringVarP(&caseFlag, "case", "c", "0", "case:0, default;1 CamelCase")
+	genCmd.Flags().StringVarP(&goPkg, "gopkg", "k", "", "golang package")
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(genCmd)
